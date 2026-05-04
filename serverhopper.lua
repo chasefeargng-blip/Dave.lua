@@ -1,38 +1,62 @@
 -- ============================================
--- D4VE HUB - SERVER HOPPER (FIXED)
+-- D4VE HUB - FIXED V2
 -- Key: Davey
--- Direct Teleport - No RemoteEvent Needed
--- Mobile & PC Support
+-- Minimize Button + Working Teleports
 -- ============================================
 
--- ===== CLIENT SIDE ONLY =====
 local guiCode = [[
 local player = game.Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local TeleportService = game:GetService("TeleportService")
+local RunService = game:GetService("RunService")
 
 -- Detect Mobile
 local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
--- Key System with Save
+-- Key System
 local correctKey = "Davey"
 local keyAccepted = false
 
--- Check if key was already saved
 if readfile and pcall(function() return readfile("D4veHub_Key.txt") end) then
-    local fileContent = readfile("D4veHub_Key.txt")
-    if fileContent == correctKey then
+    if readfile("D4veHub_Key.txt") == correctKey then
         keyAccepted = true
     end
 end
 
--- Create GUI
+-- GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "D4veHub"
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")
+
+-- ===== MINIMIZE BUTTON (always visible) =====
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Name = "MinimizeBtn"
+minimizeBtn.Size = UDim2.new(0, 50, 0, 50)
+minimizeBtn.Position = UDim2.new(0.95, -60, 0.85, -60)
+minimizeBtn.Text = "D4"
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 170)
+minimizeBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+minimizeBtn.Font = Enum.Font.GothamBlack
+minimizeBtn.TextSize = 18
+minimizeBtn.BorderSizePixel = 0
+minimizeBtn.AutoButtonColor = false
+minimizeBtn.Active = true
+minimizeBtn.Draggable = true
+minimizeBtn.Visible = keyAccepted
+minimizeBtn.ZIndex = 10
+minimizeBtn.Parent = gui
+
+local minCorner = Instance.new("UICorner")
+minCorner.CornerRadius = UDim.new(1, 0)
+minCorner.Parent = minimizeBtn
+
+local minStroke = Instance.new("UIStroke")
+minStroke.Color = Color3.fromRGB(255, 255, 255)
+minStroke.Thickness = 2
+minStroke.Parent = minimizeBtn
 
 -- ===== KEY FRAME =====
 local keyFrameSize = isMobile and UDim2.new(0, 250, 0, 170) or UDim2.new(0, 290, 0, 190)
@@ -45,6 +69,7 @@ keyFrame.BorderSizePixel = 0
 keyFrame.Active = true
 keyFrame.Draggable = true
 keyFrame.Visible = not keyAccepted
+keyFrame.ZIndex = 5
 keyFrame.Parent = gui
 
 local kfCorner = Instance.new("UICorner")
@@ -57,7 +82,6 @@ kfStroke.Transparency = 0.5
 kfStroke.Thickness = 1.5
 kfStroke.Parent = keyFrame
 
--- Key Title
 local keyTitle = Instance.new("TextLabel")
 keyTitle.Size = UDim2.new(1, 0, 0, 42)
 keyTitle.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
@@ -72,7 +96,6 @@ local ktCorner = Instance.new("UICorner")
 ktCorner.CornerRadius = UDim.new(0, 14)
 ktCorner.Parent = keyTitle
 
--- Key Input
 local keyInput = Instance.new("TextBox")
 keyInput.Size = UDim2.new(0.82, 0, 0, 40)
 keyInput.Position = UDim2.new(0.09, 0, 0.45, 0)
@@ -90,7 +113,6 @@ local kiCorner = Instance.new("UICorner")
 kiCorner.CornerRadius = UDim.new(0, 8)
 kiCorner.Parent = keyInput
 
--- Submit Button
 local submitBtn = Instance.new("TextButton")
 submitBtn.Size = UDim2.new(0.82, 0, 0, 44)
 submitBtn.Position = UDim2.new(0.09, 0, 0.7, 0)
@@ -107,7 +129,6 @@ local sbCorner = Instance.new("UICorner")
 sbCorner.CornerRadius = UDim.new(0, 10)
 sbCorner.Parent = submitBtn
 
--- Key Status
 local keyStatus = Instance.new("TextLabel")
 keyStatus.Size = UDim2.new(1, 0, 0, 18)
 keyStatus.Position = UDim2.new(0, 0, 0.92, 0)
@@ -118,8 +139,8 @@ keyStatus.Font = Enum.Font.SourceSans
 keyStatus.TextSize = 11
 keyStatus.Parent = keyFrame
 
--- ===== MAIN HUB FRAME =====
-local mainFrameSize = isMobile and UDim2.new(0, 250, 0, 240) or UDim2.new(0, 290, 0, 260)
+-- ===== MAIN FRAME =====
+local mainFrameSize = isMobile and UDim2.new(0, 250, 0, 260) or UDim2.new(0, 290, 0, 280)
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = mainFrameSize
@@ -129,6 +150,7 @@ mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Draggable = true
 mainFrame.Visible = keyAccepted
+mainFrame.ZIndex = 5
 mainFrame.Parent = gui
 
 local mfCorner = Instance.new("UICorner")
@@ -141,7 +163,6 @@ mfStroke.Transparency = 0.5
 mfStroke.Thickness = 1.5
 mfStroke.Parent = mainFrame
 
--- Hub Title
 local hubTitle = Instance.new("TextLabel")
 hubTitle.Size = UDim2.new(1, 0, 0, 42)
 hubTitle.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
@@ -177,16 +198,33 @@ closeBtn.MouseButton1Click:Connect(function()
     gui:Destroy()
 end)
 
--- ===== SERVER HOP BUTTON (New Server) =====
+-- Minimize Button (_)
+local minBtn = Instance.new("TextButton")
+minBtn.Size = UDim2.new(0, 28, 0, 28)
+minBtn.Position = UDim2.new(1, -66, 0, 7)
+minBtn.Text = "_"
+minBtn.BackgroundColor3 = Color3.fromRGB(255, 180, 0)
+minBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minBtn.Font = Enum.Font.GothamBlack
+minBtn.TextSize = 16
+minBtn.BorderSizePixel = 0
+minBtn.AutoButtonColor = false
+minBtn.Parent = mainFrame
+
+local mnCorner = Instance.new("UICorner")
+mnCorner.CornerRadius = UDim.new(0, 8)
+mnCorner.Parent = minBtn
+
+-- ===== BUTTONS =====
 local serverHopBtn = Instance.new("TextButton")
-serverHopBtn.Size = UDim2.new(0.85, 0, 0, 42)
-serverHopBtn.Position = UDim2.new(0.075, 0, 0.2, 0)
-serverHopBtn.Text = "SERVER HOP 🔄"
+serverHopBtn.Size = UDim2.new(0.85, 0, 0, 40)
+serverHopBtn.Position = UDim2.new(0.075, 0, 0.18, 0)
+serverHopBtn.Text = "SERVER HOP"
 serverHopBtn.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
 serverHopBtn.BorderSizePixel = 0
 serverHopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 serverHopBtn.Font = Enum.Font.GothamBlack
-serverHopBtn.TextSize = isMobile and 12 or 14
+serverHopBtn.TextSize = 14
 serverHopBtn.AutoButtonColor = false
 serverHopBtn.Parent = mainFrame
 
@@ -194,16 +232,15 @@ local shbCorner = Instance.new("UICorner")
 shbCorner.CornerRadius = UDim.new(0, 10)
 shbCorner.Parent = serverHopBtn
 
--- ===== REJOIN BUTTON (Same Server) =====
 local rejoinBtn = Instance.new("TextButton")
-rejoinBtn.Size = UDim2.new(0.85, 0, 0, 42)
-rejoinBtn.Position = UDim2.new(0.075, 0, 0.4, 0)
-rejoinBtn.Text = "REJOIN 🔁"
+rejoinBtn.Size = UDim2.new(0.85, 0, 0, 40)
+rejoinBtn.Position = UDim2.new(0.075, 0, 0.36, 0)
+rejoinBtn.Text = "REJOIN"
 rejoinBtn.BackgroundColor3 = Color3.fromRGB(100, 60, 255)
 rejoinBtn.BorderSizePixel = 0
 rejoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 rejoinBtn.Font = Enum.Font.GothamBlack
-rejoinBtn.TextSize = isMobile and 12 or 14
+rejoinBtn.TextSize = 14
 rejoinBtn.AutoButtonColor = false
 rejoinBtn.Parent = mainFrame
 
@@ -211,10 +248,9 @@ local rjbCorner = Instance.new("UICorner")
 rjbCorner.CornerRadius = UDim.new(0, 10)
 rjbCorner.Parent = rejoinBtn
 
--- Place ID Input
 local placeInput = Instance.new("TextBox")
-placeInput.Size = UDim2.new(0.85, 0, 0, 36)
-placeInput.Position = UDim2.new(0.075, 0, 0.62, 0)
+placeInput.Size = UDim2.new(0.85, 0, 0, 35)
+placeInput.Position = UDim2.new(0.075, 0, 0.56, 0)
 placeInput.PlaceholderText = "Enter Place ID..."
 placeInput.Text = ""
 placeInput.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
@@ -229,16 +265,15 @@ local piCorner = Instance.new("UICorner")
 piCorner.CornerRadius = UDim.new(0, 8)
 piCorner.Parent = placeInput
 
--- ===== CUSTOM HOP BUTTON =====
 local hopBtn = Instance.new("TextButton")
-hopBtn.Size = UDim2.new(0.85, 0, 0, 42)
-hopBtn.Position = UDim2.new(0.075, 0, 0.8, 0)
-hopBtn.Text = "CUSTOM HOP 🎯"
+hopBtn.Size = UDim2.new(0.85, 0, 0, 40)
+hopBtn.Position = UDim2.new(0.075, 0, 0.75, 0)
+hopBtn.Text = "CUSTOM HOP"
 hopBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 130)
 hopBtn.BorderSizePixel = 0
 hopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 hopBtn.Font = Enum.Font.GothamBlack
-hopBtn.TextSize = isMobile and 12 or 14
+hopBtn.TextSize = 14
 hopBtn.AutoButtonColor = false
 hopBtn.Parent = mainFrame
 
@@ -246,7 +281,6 @@ local hbCorner = Instance.new("UICorner")
 hbCorner.CornerRadius = UDim.new(0, 10)
 hbCorner.Parent = hopBtn
 
--- Status Label
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, 0, 0, 18)
 statusLabel.Position = UDim2.new(0, 0, 0.94, 0)
@@ -256,6 +290,21 @@ statusLabel.Text = "Ready"
 statusLabel.Font = Enum.Font.SourceSans
 statusLabel.TextSize = 11
 statusLabel.Parent = mainFrame
+
+-- ===== MINIMIZE FUNCTION =====
+local isMinimized = false
+
+minBtn.MouseButton1Click:Connect(function()
+    isMinimized = true
+    mainFrame.Visible = false
+    minimizeBtn.Visible = true
+end)
+
+minimizeBtn.MouseButton1Click:Connect(function()
+    isMinimized = false
+    mainFrame.Visible = true
+    minimizeBtn.Visible = false
+end)
 
 -- ===== KEY SUBMIT =====
 submitBtn.MouseButton1Click:Connect(function()
@@ -270,6 +319,7 @@ submitBtn.MouseButton1Click:Connect(function()
         
         keyFrame.Visible = false
         mainFrame.Visible = true
+        minimizeBtn.Visible = false
     else
         keyStatus.Text = "Wrong key!"
         keyStatus.TextColor3 = Color3.fromRGB(255, 60, 60)
@@ -278,30 +328,28 @@ submitBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ===== SERVER HOP (New Server) =====
+-- ===== SERVER HOP =====
 serverHopBtn.MouseButton1Click:Connect(function()
-    local currentPlaceId = game.PlaceId
-    statusLabel.Text = "Finding new server..."
+    statusLabel.Text = "Hopping to new server..."
     statusLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
     
+    local ts = TeleportService
     local options = Instance.new("TeleportOptions")
     options.ShouldShowTeleportDialog = false
     
-    TeleportService:Teleport(currentPlaceId, player, nil, nil, options)
+    ts:Teleport(game.PlaceId, player, nil, nil, options)
 end)
 
--- ===== REJOIN (Same Server) =====
+-- ===== REJOIN =====
 rejoinBtn.MouseButton1Click:Connect(function()
-    local currentPlaceId = game.PlaceId
-    local currentJobId = game.JobId
-    statusLabel.Text = "Rejoining same server..."
+    statusLabel.Text = "Rejoining..."
     statusLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
     
+    local ts = TeleportService
     local options = Instance.new("TeleportOptions")
     options.ShouldShowTeleportDialog = false
-    options.ServerInstanceId = currentJobId
     
-    TeleportService:Teleport(currentPlaceId, player, nil, nil, options)
+    ts:Teleport(game.PlaceId, player, nil, nil, options)
 end)
 
 -- ===== CUSTOM HOP =====
@@ -309,7 +357,7 @@ hopBtn.MouseButton1Click:Connect(function()
     local placeId = tonumber(placeInput.Text)
     
     if not placeId then
-        statusLabel.Text = "Invalid Place ID!"
+        statusLabel.Text = "Enter a valid Place ID!"
         statusLabel.TextColor3 = Color3.fromRGB(255, 60, 60)
         wait(2)
         statusLabel.Text = "Ready"
@@ -317,16 +365,17 @@ hopBtn.MouseButton1Click:Connect(function()
         return
     end
     
-    statusLabel.Text = "Hopping..."
+    statusLabel.Text = "Teleporting..."
     statusLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
     
+    local ts = TeleportService
     local options = Instance.new("TeleportOptions")
     options.ShouldShowTeleportDialog = false
     
-    TeleportService:Teleport(placeId, player, nil, nil, options)
+    ts:Teleport(placeId, player, nil, nil, options)
 end)
 
-print("D4ve Hub loaded!")
+print("D4ve Hub loaded! Minimize button ready.")
 ]]
 
 loadstring(guiCode)()
