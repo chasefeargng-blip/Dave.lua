@@ -1,17 +1,12 @@
 -- ============================================
--- D4VE HUB - FULL PACKAGE
--- Key: Davey | Mobile + PC | D4 Icon | Draggable | All Working
+-- D4VE HUB - FINAL WORKING VERSION
+-- Key: Davey | Mobile + PC | D4 Icon | All Working
 -- ============================================
 
 local player = game.Players.LocalPlayer
-local TeleportService = game:GetService("TeleportService")
-local UserInputService = game:GetService("UserInputService")
-local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
-
-local gui = Instance.new("ScreenGui")
-gui.Name = "D4veHub"
-gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+local ts = game:GetService("TeleportService")
+local uis = game:GetService("UserInputService")
+local isMobile = uis.TouchEnabled and not uis.KeyboardEnabled
 
 -- Key check
 local keyOk = false
@@ -19,15 +14,18 @@ if readfile and pcall(function() return readfile("D4veHub_Key.txt") end) then
     if readfile("D4veHub_Key.txt") == "Davey" then keyOk = true end
 end
 
--- ===== TELEPORT =====
+-- Teleport functie
 local function hop(id)
-    local ts = TeleportService
-    local opt = Instance.new("TeleportOptions")
-    opt.ShouldShowTeleportDialog = false
-    ts:Teleport(id, player, nil, nil, opt)
+    ts:Teleport(id, player)
 end
 
--- ===== D4 ICON (Draggable) =====
+-- GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "D4veHub"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- ===== D4 ICON =====
 local d4 = Instance.new("TextButton")
 d4.Size = UDim2.new(0, 44, 0, 44)
 d4.Position = UDim2.new(0.02, 0, 0.02, 0)
@@ -42,7 +40,7 @@ d4.ZIndex = 10
 d4.Parent = gui
 Instance.new("UICorner", d4).CornerRadius = UDim.new(1, 0)
 
--- Dragging
+-- Drag systeem
 local drag, moved, sPos, sFrame = false, false, nil, nil
 d4.InputBegan:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
@@ -55,7 +53,7 @@ d4.InputEnded:Connect(function(i)
         if not moved then main.Visible, d4.Visible = true, false end
     end
 end)
-UserInputService.InputChanged:Connect(function(i)
+uis.InputChanged:Connect(function(i)
     if drag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
         local d = i.Position - sPos
         if math.abs(d.X) > 2 or math.abs(d.Y) > 2 then moved = true end
@@ -64,7 +62,7 @@ UserInputService.InputChanged:Connect(function(i)
 end)
 
 -- ===== MAIN FRAME =====
-local mSize = isMobile and UDim2.new(0, 240, 0, 230) or UDim2.new(0, 260, 0, 240)
+local mSize = isMobile and UDim2.new(0, 240, 0, 210) or UDim2.new(0, 250, 0, 220)
 local main = Instance.new("Frame")
 main.Size = mSize
 main.Position = UDim2.new(0.5, -mSize.X.Offset/2, 0.5, -mSize.Y.Offset/2)
@@ -77,7 +75,6 @@ main.ZIndex = 5
 main.Parent = gui
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
 
--- Stroke
 local ms = Instance.new("UIStroke")
 ms.Color = Color3.fromRGB(0, 255, 170)
 ms.Thickness = 1.5
@@ -124,19 +121,8 @@ mb.Parent = main
 Instance.new("UICorner", mb).CornerRadius = UDim.new(0, 5)
 mb.MouseButton1Click:Connect(function() main.Visible, d4.Visible = false, true end)
 
--- Status
-local st = Instance.new("TextLabel")
-st.Size = UDim2.new(1, 0, 0, 16)
-st.Position = UDim2.new(0, 0, 0.93, 0)
-st.BackgroundTransparency = 1
-st.TextColor3 = Color3.fromRGB(150, 150, 150)
-st.Text = "Ready"
-st.Font = Enum.Font.SourceSans
-st.TextSize = 10
-st.Parent = main
-
 -- ===== BUTTONS =====
-local bw, bx = isMobile and 0.84 or 0.85, isMobile and 0.08 or 0.075
+local bw, bx = 0.8, 0.1
 
 -- Server Hop
 local b1 = Instance.new("TextButton")
@@ -145,12 +131,12 @@ b1.Position = UDim2.new(bx, 0, 0.17, 0)
 b1.Text = "SERVER HOP"
 b1.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
 b1.TextColor3 = Color3.fromRGB(255, 255, 255)
-b1.Font = Enum.Font.GothamBlack
-b1.TextSize = isMobile and 12 or 14
+b1.Font = Enum.Font.GothamBold
+b1.TextSize = 14
 b1.BorderSizePixel = 0
 b1.Parent = main
 Instance.new("UICorner", b1).CornerRadius = UDim.new(0, 8)
-b1.MouseButton1Click:Connect(function() st.Text = "Hopping..."; st.TextColor3 = Color3.fromRGB(255, 200, 50); hop(game.PlaceId) end)
+b1.MouseButton1Click:Connect(function() hop(game.PlaceId) end)
 
 -- Rejoin
 local b2 = Instance.new("TextButton")
@@ -159,24 +145,24 @@ b2.Position = UDim2.new(bx, 0, 0.38, 0)
 b2.Text = "REJOIN"
 b2.BackgroundColor3 = Color3.fromRGB(100, 60, 255)
 b2.TextColor3 = Color3.fromRGB(255, 255, 255)
-b2.Font = Enum.Font.GothamBlack
-b2.TextSize = isMobile and 12 or 14
+b2.Font = Enum.Font.GothamBold
+b2.TextSize = 14
 b2.BorderSizePixel = 0
 b2.Parent = main
 Instance.new("UICorner", b2).CornerRadius = UDim.new(0, 8)
-b2.MouseButton1Click:Connect(function() st.Text = "Rejoining..."; st.TextColor3 = Color3.fromRGB(255, 200, 50); hop(game.PlaceId) end)
+b2.MouseButton1Click:Connect(function() hop(game.PlaceId) end)
 
 -- Input
 local inp = Instance.new("TextBox")
-inp.Size = UDim2.new(bw, 0, 0, 32)
-inp.Position = UDim2.new(bx, 0, 0.58, 0)
+inp.Size = UDim2.new(bw, 0, 0, 30)
+inp.Position = UDim2.new(bx, 0, 0.57, 0)
 inp.PlaceholderText = "Place ID..."
 inp.Text = ""
 inp.BackgroundColor3 = Color3.fromRGB(38, 38, 43)
 inp.TextColor3 = Color3.fromRGB(255, 255, 255)
 inp.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
 inp.Font = Enum.Font.SourceSans
-inp.TextSize = isMobile and 12 or 13
+inp.TextSize = 13
 inp.BorderSizePixel = 0
 inp.Parent = main
 Instance.new("UICorner", inp).CornerRadius = UDim.new(0, 6)
@@ -184,23 +170,29 @@ Instance.new("UICorner", inp).CornerRadius = UDim.new(0, 6)
 -- Custom Hop
 local b3 = Instance.new("TextButton")
 b3.Size = UDim2.new(bw, 0, 0, 40)
-b3.Position = UDim2.new(bx, 0, 0.75, 0)
+b3.Position = UDim2.new(bx, 0, 0.73, 0)
 b3.Text = "CUSTOM HOP"
 b3.BackgroundColor3 = Color3.fromRGB(0, 200, 130)
 b3.TextColor3 = Color3.fromRGB(255, 255, 255)
-b3.Font = Enum.Font.GothamBlack
-b3.TextSize = isMobile and 12 or 14
+b3.Font = Enum.Font.GothamBold
+b3.TextSize = 14
 b3.BorderSizePixel = 0
 b3.Parent = main
 Instance.new("UICorner", b3).CornerRadius = UDim.new(0, 8)
 b3.MouseButton1Click:Connect(function()
     local id = tonumber(inp.Text)
-    if id then st.Text = "Teleporting..."; st.TextColor3 = Color3.fromRGB(255, 200, 50); hop(id)
-    else st.Text = "Invalid ID!"; st.TextColor3 = Color3.fromRGB(255, 60, 60); wait(2); st.Text = "Ready"; st.TextColor3 = Color3.fromRGB(150, 150, 150) end
+    if id and id > 0 then 
+        hop(id)
+    else
+        inp.Text = ""
+        inp.PlaceholderText = "Invalid ID!"
+        wait(1.5)
+        inp.PlaceholderText = "Place ID..."
+    end
 end)
 
 -- ===== KEY FRAME =====
-local kSize = isMobile and UDim2.new(0, 240, 0, 140) or UDim2.new(0, 260, 0, 150)
+local kSize = isMobile and UDim2.new(0, 240, 0, 140) or UDim2.new(0, 250, 0, 150)
 local kf = Instance.new("Frame")
 kf.Size = kSize
 kf.Position = UDim2.new(0.5, -kSize.X.Offset/2, 0.5, -kSize.Y.Offset/2)
@@ -267,4 +259,4 @@ ku.MouseButton1Click:Connect(function()
     end
 end)
 
-print("D4ve Hub Ready! Mobile + PC | Key: Davey")
+print("D4ve Hub Ready! Key: Davey")
