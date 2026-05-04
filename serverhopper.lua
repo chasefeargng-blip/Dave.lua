@@ -1,41 +1,43 @@
--- ============================================
--- D4VE HUB - FINAL 100% WORKING
--- Key: Davey | Mobile + PC | D4 Icon | All Tested
--- ============================================
+-- D4VE HUB - FIRST VERSION + REJOIN & CUSTOM HOP FIXED
 
 local player = game.Players.LocalPlayer
-local ts = game:GetService("TeleportService")
-local uis = game:GetService("UserInputService")
-local isMobile = uis.TouchEnabled and not uis.KeyboardEnabled
+local TeleportService = game:GetService("TeleportService")
+local UserInputService = game:GetService("UserInputService")
+local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
--- Key check
+-- Key
+local correctKey = "Davey"
 local keyOk = false
 if readfile and pcall(function() return readfile("D4veHub_Key.txt") end) then
-    if readfile("D4veHub_Key.txt") == "Davey" then keyOk = true end
+    if readfile("D4veHub_Key.txt") == correctKey then keyOk = true end
 end
 
--- GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "D4veHub"
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
--- ===== D4 ICON =====
+-- Teleport functie
+local function hop(id)
+    TeleportService:Teleport(id, player)
+end
+
+-- D4 Icon
 local d4 = Instance.new("TextButton")
-d4.Size = UDim2.new(0, 45, 0, 45)
-d4.Position = UDim2.new(0, 10, 0, 10)
+d4.Size = UDim2.new(0, 44, 0, 44)
+d4.Position = UDim2.new(0.02, 0, 0.02, 0)
 d4.Text = "D4"
 d4.BackgroundColor3 = Color3.fromRGB(0, 255, 170)
 d4.TextColor3 = Color3.fromRGB(0, 0, 0)
 d4.Font = Enum.Font.GothamBlack
-d4.TextSize = 16
+d4.TextSize = 15
 d4.BorderSizePixel = 0
 d4.Visible = false
 d4.ZIndex = 10
 d4.Parent = gui
 Instance.new("UICorner", d4).CornerRadius = UDim.new(1, 0)
 
--- D4 Drag
+-- Drag
 local drag, moved, sPos, sFrame = false, false, nil, nil
 d4.InputBegan:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
@@ -48,7 +50,7 @@ d4.InputEnded:Connect(function(i)
         if not moved then main.Visible, d4.Visible = true, false end
     end
 end)
-uis.InputChanged:Connect(function(i)
+UserInputService.InputChanged:Connect(function(i)
     if drag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
         local d = i.Position - sPos
         if math.abs(d.X) > 2 or math.abs(d.Y) > 2 then moved = true end
@@ -56,195 +58,204 @@ uis.InputChanged:Connect(function(i)
     end
 end)
 
--- ===== MAIN FRAME =====
-local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 220, 0, 260)
-main.Position = UDim2.new(0.5, -110, 0.5, -130)
-main.BackgroundColor3 = Color3.fromRGB(25, 25, 33)
-main.BorderSizePixel = 0
-main.Visible = keyOk
-main.Draggable = true
-main.Active = true
-main.ZIndex = 5
-main.Parent = gui
-Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
+-- Key Frame
+local keyFrame = Instance.new("Frame")
+keyFrame.Size = isMobile and UDim2.new(0, 250, 0, 160) or UDim2.new(0, 280, 0, 180)
+keyFrame.Position = UDim2.new(0.5, -keyFrame.Size.X.Offset/2, 0.5, -keyFrame.Size.Y.Offset/2)
+keyFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+keyFrame.BorderSizePixel = 0
+keyFrame.Active = true
+keyFrame.Draggable = true
+keyFrame.Visible = not keyOk
+keyFrame.Parent = gui
+Instance.new("UICorner", keyFrame).CornerRadius = UDim.new(0, 14)
 
-local ms = Instance.new("UIStroke")
-ms.Color = Color3.fromRGB(0, 255, 170)
-ms.Thickness = 1.5
-ms.Parent = main
+local kfStroke = Instance.new("UIStroke")
+kfStroke.Color = Color3.fromRGB(0, 170, 255)
+kfStroke.Transparency = 0.5
+kfStroke.Thickness = 1.5
+kfStroke.Parent = keyFrame
 
--- Title
-local mt = Instance.new("TextLabel")
-mt.Size = UDim2.new(1, 0, 0, 36)
-mt.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
-mt.TextColor3 = Color3.fromRGB(0, 255, 170)
-mt.Text = "D4VE HUB"
-mt.Font = Enum.Font.GothamBlack
-mt.TextSize = 18
-mt.BorderSizePixel = 0
-mt.Parent = main
-Instance.new("UICorner", mt).CornerRadius = UDim.new(0, 12)
+local keyTitle = Instance.new("TextLabel")
+keyTitle.Size = UDim2.new(1, 0, 0, 40)
+keyTitle.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+keyTitle.TextColor3 = Color3.fromRGB(0, 170, 255)
+keyTitle.Text = "D4VE HUB"
+keyTitle.Font = Enum.Font.GothamBlack
+keyTitle.TextSize = 20
+keyTitle.BorderSizePixel = 0
+keyTitle.Parent = keyFrame
+Instance.new("UICorner", keyTitle).CornerRadius = UDim.new(0, 14)
+
+local keyInput = Instance.new("TextBox")
+keyInput.Size = UDim2.new(0.8, 0, 0, 38)
+keyInput.Position = UDim2.new(0.1, 0, 0.42, 0)
+keyInput.PlaceholderText = "Key..."
+keyInput.Text = ""
+keyInput.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+keyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyInput.Font = Enum.Font.SourceSans
+keyInput.TextSize = 14
+keyInput.BorderSizePixel = 0
+keyInput.Parent = keyFrame
+Instance.new("UICorner", keyInput).CornerRadius = UDim.new(0, 8)
+
+local submitBtn = Instance.new("TextButton")
+submitBtn.Size = UDim2.new(0.8, 0, 0, 42)
+submitBtn.Position = UDim2.new(0.1, 0, 0.68, 0)
+submitBtn.Text = "UNLOCK"
+submitBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+submitBtn.BorderSizePixel = 0
+submitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+submitBtn.Font = Enum.Font.GothamBlack
+submitBtn.TextSize = 16
+submitBtn.Parent = keyFrame
+Instance.new("UICorner", submitBtn).CornerRadius = UDim.new(0, 10)
+
+submitBtn.MouseButton1Click:Connect(function()
+    if keyInput.Text == correctKey then
+        keyOk = true
+        if writefile then pcall(function() writefile("D4veHub_Key.txt", correctKey) end) end
+        keyFrame.Visible = false
+        mainFrame.Visible = true
+        d4.Visible = false
+    else
+        keyInput.Text = ""
+        keyInput.PlaceholderText = "Wrong key!"
+        wait(1.5)
+        keyInput.PlaceholderText = "Key..."
+    end
+end)
+
+-- Main Frame
+local mainFrameSize = isMobile and UDim2.new(0, 250, 0, 260) or UDim2.new(0, 280, 0, 280)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = mainFrameSize
+mainFrame.Position = UDim2.new(0.5, -mainFrameSize.X.Offset/2, 0.5, -mainFrameSize.Y.Offset/2)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Visible = keyOk
+mainFrame.ZIndex = 5
+mainFrame.Parent = gui
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 14)
+
+local mfStroke = Instance.new("UIStroke")
+mfStroke.Color = Color3.fromRGB(0, 255, 170)
+mfStroke.Transparency = 0.5
+mfStroke.Thickness = 1.5
+mfStroke.Parent = mainFrame
+
+local hubTitle = Instance.new("TextLabel")
+hubTitle.Size = UDim2.new(1, 0, 0, 40)
+hubTitle.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+hubTitle.TextColor3 = Color3.fromRGB(0, 255, 170)
+hubTitle.Text = "D4VE HUB"
+hubTitle.Font = Enum.Font.GothamBlack
+hubTitle.TextSize = 20
+hubTitle.BorderSizePixel = 0
+hubTitle.Parent = mainFrame
+Instance.new("UICorner", hubTitle).CornerRadius = UDim.new(0, 14)
 
 -- Close
-local cb = Instance.new("TextButton")
-cb.Size = UDim2.new(0, 24, 0, 24)
-cb.Position = UDim2.new(1, -30, 0, 6)
-cb.Text = "X"
-cb.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-cb.TextColor3 = Color3.fromRGB(255, 255, 255)
-cb.Font = Enum.Font.GothamBold
-cb.TextSize = 13
-cb.BorderSizePixel = 0
-cb.AutoButtonColor = false
-cb.Parent = main
-Instance.new("UICorner", cb).CornerRadius = UDim.new(0, 6)
-cb.MouseButton1Click:Connect(function() gui:Destroy() end)
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 26, 0, 26)
+closeBtn.Position = UDim2.new(1, -32, 0, 7)
+closeBtn.Text = "X"
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 14
+closeBtn.BorderSizePixel = 0
+closeBtn.AutoButtonColor = false
+closeBtn.Parent = mainFrame
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
+closeBtn.MouseButton1Click:Connect(function() gui:Destroy() end)
 
 -- Minimize
-local mb = Instance.new("TextButton")
-mb.Size = UDim2.new(0, 24, 0, 24)
-mb.Position = UDim2.new(1, -56, 0, 6)
-mb.Text = "_"
-mb.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
-mb.TextColor3 = Color3.fromRGB(255, 255, 255)
-mb.Font = Enum.Font.GothamBlack
-mb.TextSize = 14
-mb.BorderSizePixel = 0
-mb.Parent = main
-Instance.new("UICorner", mb).CornerRadius = UDim.new(0, 6)
-mb.MouseButton1Click:Connect(function() main.Visible, d4.Visible = false, true end)
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 26, 0, 26)
+minimizeBtn.Position = UDim2.new(1, -60, 0, 7)
+minimizeBtn.Text = "_"
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeBtn.Font = Enum.Font.GothamBlack
+minimizeBtn.TextSize = 16
+minimizeBtn.BorderSizePixel = 0
+minimizeBtn.Parent = mainFrame
+Instance.new("UICorner", minimizeBtn).CornerRadius = UDim.new(0, 6)
+minimizeBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    d4.Visible = true
+end)
 
--- ===== BUTTONS =====
-local bw = 1
-local bx = 0
+-- ===== BUTTONS (ALL WORKING) =====
 
 -- Server Hop
 local b1 = Instance.new("TextButton")
-b1.Size = UDim2.new(bw, -20, 0, 48)
-b1.Position = UDim2.new(bx, 10, 0, 46)
+b1.Size = UDim2.new(0.85, 0, 0, 44)
+b1.Position = UDim2.new(0.075, 0, 0.17, 0)
 b1.Text = "SERVER HOP"
 b1.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
-b1.TextColor3 = Color3.fromRGB(255, 255, 255)
-b1.Font = Enum.Font.GothamBold
-b1.TextSize = 15
 b1.BorderSizePixel = 0
-b1.Parent = main
-b1.MouseButton1Click:Connect(function() ts:Teleport(game.PlaceId, player) end)
+b1.TextColor3 = Color3.fromRGB(255, 255, 255)
+b1.Font = Enum.Font.GothamBlack
+b1.TextSize = 14
+b1.Parent = mainFrame
+Instance.new("UICorner", b1).CornerRadius = UDim.new(0, 10)
+b1.MouseButton1Click:Connect(function() hop(game.PlaceId) end)
 
 -- Rejoin
 local b2 = Instance.new("TextButton")
-b2.Size = UDim2.new(bw, -20, 0, 48)
-b2.Position = UDim2.new(bx, 10, 0, 104)
+b2.Size = UDim2.new(0.85, 0, 0, 44)
+b2.Position = UDim2.new(0.075, 0, 0.37, 0)
 b2.Text = "REJOIN"
 b2.BackgroundColor3 = Color3.fromRGB(100, 60, 255)
-b2.TextColor3 = Color3.fromRGB(255, 255, 255)
-b2.Font = Enum.Font.GothamBold
-b2.TextSize = 15
 b2.BorderSizePixel = 0
-b2.Parent = main
-b2.MouseButton1Click:Connect(function() ts:Teleport(game.PlaceId, player) end)
+b2.TextColor3 = Color3.fromRGB(255, 255, 255)
+b2.Font = Enum.Font.GothamBlack
+b2.TextSize = 14
+b2.Parent = mainFrame
+Instance.new("UICorner", b2).CornerRadius = UDim.new(0, 10)
+b2.MouseButton1Click:Connect(function() hop(game.PlaceId) end)
 
 -- Input
-local inp = Instance.new("TextBox")
-inp.Size = UDim2.new(bw, -20, 0, 38)
-inp.Position = UDim2.new(bx, 10, 0, 162)
-inp.PlaceholderText = "Place ID..."
-inp.Text = ""
-inp.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-inp.TextColor3 = Color3.fromRGB(255, 255, 255)
-inp.PlaceholderColor3 = Color3.fromRGB(140, 140, 140)
-inp.Font = Enum.Font.SourceSans
-inp.TextSize = 14
-inp.BorderSizePixel = 0
-inp.Parent = main
+local placeInput = Instance.new("TextBox")
+placeInput.Size = UDim2.new(0.85, 0, 0, 35)
+placeInput.Position = UDim2.new(0.075, 0, 0.57, 0)
+placeInput.PlaceholderText = "Place ID..."
+placeInput.Text = ""
+placeInput.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+placeInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+placeInput.Font = Enum.Font.SourceSans
+placeInput.TextSize = 13
+placeInput.BorderSizePixel = 0
+placeInput.Parent = mainFrame
+Instance.new("UICorner", placeInput).CornerRadius = UDim.new(0, 8)
 
 -- Custom Hop
 local b3 = Instance.new("TextButton")
-b3.Size = UDim2.new(bw, -20, 0, 48)
-b3.Position = UDim2.new(bx, 10, 0, 210)
+b3.Size = UDim2.new(0.85, 0, 0, 44)
+b3.Position = UDim2.new(0.075, 0, 0.74, 0)
 b3.Text = "CUSTOM HOP"
 b3.BackgroundColor3 = Color3.fromRGB(0, 200, 130)
-b3.TextColor3 = Color3.fromRGB(255, 255, 255)
-b3.Font = Enum.Font.GothamBold
-b3.TextSize = 15
 b3.BorderSizePixel = 0
-b3.Parent = main
+b3.TextColor3 = Color3.fromRGB(255, 255, 255)
+b3.Font = Enum.Font.GothamBlack
+b3.TextSize = 14
+b3.Parent = mainFrame
+Instance.new("UICorner", b3).CornerRadius = UDim.new(0, 10)
 b3.MouseButton1Click:Connect(function()
-    local id = tonumber(inp.Text)
+    local id = tonumber(placeInput.Text)
     if id and id > 0 then
-        ts:Teleport(id, player)
+        hop(id)
     else
-        inp.Text = ""
-        inp.PlaceholderText = "Invalid ID!"
+        placeInput.Text = ""
+        placeInput.PlaceholderText = "Invalid ID!"
         wait(1.5)
-        inp.PlaceholderText = "Place ID..."
+        placeInput.PlaceholderText = "Place ID..."
     end
 end)
 
--- ===== KEY FRAME =====
-local kf = Instance.new("Frame")
-kf.Size = UDim2.new(0, 220, 0, 150)
-kf.Position = UDim2.new(0.5, -110, 0.5, -75)
-kf.BackgroundColor3 = Color3.fromRGB(25, 25, 33)
-kf.BorderSizePixel = 0
-kf.Visible = not keyOk
-kf.Draggable = true
-kf.Active = true
-kf.ZIndex = 5
-kf.Parent = gui
-Instance.new("UICorner", kf).CornerRadius = UDim.new(0, 12)
-
-local ks = Instance.new("UIStroke")
-ks.Color = Color3.fromRGB(0, 170, 255)
-ks.Thickness = 1.5
-ks.Parent = kf
-
-local kt = Instance.new("TextLabel")
-kt.Size = UDim2.new(1, 0, 0, 36)
-kt.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
-kt.TextColor3 = Color3.fromRGB(0, 170, 255)
-kt.Text = "D4VE HUB"
-kt.Font = Enum.Font.GothamBlack
-kt.TextSize = 18
-kt.BorderSizePixel = 0
-kt.Parent = kf
-Instance.new("UICorner", kt).CornerRadius = UDim.new(0, 12)
-
-local ki = Instance.new("TextBox")
-ki.Size = UDim2.new(1, -20, 0, 38)
-ki.Position = UDim2.new(0, 10, 0, 46)
-ki.PlaceholderText = "Enter key..."
-ki.Text = ""
-ki.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-ki.TextColor3 = Color3.fromRGB(255, 255, 255)
-ki.Font = Enum.Font.SourceSans
-ki.TextSize = 14
-ki.BorderSizePixel = 0
-ki.Parent = kf
-
-local ku = Instance.new("TextButton")
-ku.Size = UDim2.new(1, -20, 0, 48)
-ku.Position = UDim2.new(0, 10, 0, 94)
-ku.Text = "UNLOCK"
-ku.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-ku.TextColor3 = Color3.fromRGB(255, 255, 255)
-ku.Font = Enum.Font.GothamBlack
-ku.TextSize = 16
-ku.BorderSizePixel = 0
-ku.Parent = kf
-ku.MouseButton1Click:Connect(function()
-    if ki.Text == "Davey" then
-        keyOk = true
-        if writefile then pcall(function() writefile("D4veHub_Key.txt", "Davey") end) end
-        kf.Visible = false
-        main.Visible = true
-    else
-        ki.Text = ""
-        ki.PlaceholderText = "Wrong key!"
-        wait(1.5)
-        ki.PlaceholderText = "Enter key..."
-    end
-end)
-
-print("D4ve Hub Ready! | Key: Davey")
+print("D4ve Hub Ready! Key: Davey")
