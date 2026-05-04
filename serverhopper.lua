@@ -1,7 +1,7 @@
 -- ============================================
--- SERVER HOPPER - KEY SYSTEM WITH SAVE
+-- D4VE HUB - SERVER HOPPER
 -- Key: Davey
--- Auto-saves key after first correct entry
+-- Server Hop + Rejoin + Custom Hop
 -- Mobile & PC Support | Everyone Can Use
 -- ============================================
 
@@ -14,7 +14,7 @@ if not ReplicatedStorage:FindFirstChild("ServerHopEvent") then
     hopEvent.Name = "ServerHopEvent"
     hopEvent.Parent = ReplicatedStorage
     
-    hopEvent.OnServerEvent:Connect(function(player, placeId)
+    hopEvent.OnServerEvent:Connect(function(player, placeId, jobId)
         if not placeId or type(placeId) ~= "number" then
             warn("Invalid Place ID from: " .. player.Name)
             return
@@ -25,6 +25,11 @@ if not ReplicatedStorage:FindFirstChild("ServerHopEvent") then
         local options = Instance.new("TeleportOptions")
         options.ShouldShowTeleportDialog = false
         
+        -- If JobId provided = rejoin same server
+        if jobId and jobId ~= "" then
+            options.ServerInstanceId = jobId
+        end
+        
         local success, err = pcall(function()
             TeleportService:Teleport(placeId, player, nil, nil, options)
         end)
@@ -34,10 +39,10 @@ if not ReplicatedStorage:FindFirstChild("ServerHopEvent") then
         end
     end)
     
-    print("Server Hop Event created!")
+    print("D4ve Hub Server Hop Event created!")
 end
 
--- ===== CLIENT GUI SIDE (Mobile + PC + Key Save) =====
+-- ===== CLIENT GUI SIDE =====
 local guiCode = [[
 local player = game.Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -53,24 +58,24 @@ local correctKey = "Davey"
 local keyAccepted = false
 
 -- Check if key was already saved
-local savedKey = readfile and pcall(function() return readfile("ServerHopper_Key.txt") end)
+local savedKey = readfile and pcall(function() return readfile("D4veHub_Key.txt") end)
 if savedKey then
-    local fileContent = readfile("ServerHopper_Key.txt")
+    local fileContent = readfile("D4veHub_Key.txt")
     if fileContent == correctKey then
         keyAccepted = true
-        print("Key auto-loaded!")
+        print("D4ve Hub Key auto-loaded!")
     end
 end
 
 -- Create GUI
 local gui = Instance.new("ScreenGui")
-gui.Name = "ServerHopper"
+gui.Name = "D4veHub"
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")
 
 -- ===== KEY FRAME =====
-local keyFrameSize = isMobile and UDim2.new(0, 240, 0, 150) or UDim2.new(0, 280, 0, 170)
+local keyFrameSize = isMobile and UDim2.new(0, 250, 0, 170) or UDim2.new(0, 290, 0, 190)
 local keyFrame = Instance.new("Frame")
 keyFrame.Name = "KeyFrame"
 keyFrame.Size = keyFrameSize
@@ -94,12 +99,12 @@ kfStroke.Parent = keyFrame
 
 -- Key Title
 local keyTitle = Instance.new("TextLabel")
-keyTitle.Size = UDim2.new(1, 0, 0, 38)
+keyTitle.Size = UDim2.new(1, 0, 0, 42)
 keyTitle.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 keyTitle.TextColor3 = Color3.fromRGB(0, 170, 255)
-keyTitle.Text = "ENTER KEY"
-keyTitle.Font = Enum.Font.GothamBold
-keyTitle.TextSize = isMobile and 14 or 17
+keyTitle.Text = "D4VE HUB"
+keyTitle.Font = Enum.Font.GothamBlack
+keyTitle.TextSize = isMobile and 17 or 21
 keyTitle.BorderSizePixel = 0
 keyTitle.Parent = keyFrame
 
@@ -107,10 +112,21 @@ local ktCorner = Instance.new("UICorner")
 ktCorner.CornerRadius = UDim.new(0, 14)
 ktCorner.Parent = keyTitle
 
+-- Key Subtitle
+local keySubtitle = Instance.new("TextLabel")
+keySubtitle.Size = UDim2.new(1, 0, 0, 18)
+keySubtitle.Position = UDim2.new(0, 0, 0.28, 0)
+keySubtitle.BackgroundTransparency = 1
+keySubtitle.TextColor3 = Color3.fromRGB(150, 150, 150)
+keySubtitle.Text = "Enter your key to unlock"
+keySubtitle.Font = Enum.Font.SourceSans
+keySubtitle.TextSize = 12
+keySubtitle.Parent = keyFrame
+
 -- Key Input
 local keyInput = Instance.new("TextBox")
-keyInput.Size = UDim2.new(0.8, 0, 0, 38)
-keyInput.Position = UDim2.new(0.1, 0, 0.35, 0)
+keyInput.Size = UDim2.new(0.82, 0, 0, 40)
+keyInput.Position = UDim2.new(0.09, 0, 0.42, 0)
 keyInput.PlaceholderText = "Enter key..."
 keyInput.Text = ""
 keyInput.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
@@ -125,11 +141,28 @@ local kiCorner = Instance.new("UICorner")
 kiCorner.CornerRadius = UDim.new(0, 8)
 kiCorner.Parent = keyInput
 
+local kiStroke = Instance.new("UIStroke")
+kiStroke.Color = Color3.fromRGB(60, 60, 70)
+kiStroke.Thickness = 1
+kiStroke.Parent = keyInput
+
+keyInput.Focused:Connect(function()
+    TweenService:Create(kiStroke, TweenInfo.new(0.3), {
+        Color = Color3.fromRGB(0, 170, 255)
+    }):Play()
+end)
+
+keyInput.FocusLost:Connect(function()
+    TweenService:Create(kiStroke, TweenInfo.new(0.3), {
+        Color = Color3.fromRGB(60, 60, 70)
+    }):Play()
+end)
+
 -- Submit Button
 local submitBtn = Instance.new("TextButton")
-submitBtn.Size = UDim2.new(0.8, 0, 0, 42)
-submitBtn.Position = UDim2.new(0.1, 0, 0.6, 0)
-submitBtn.Text = "SUBMIT"
+submitBtn.Size = UDim2.new(0.82, 0, 0, 44)
+submitBtn.Position = UDim2.new(0.09, 0, 0.68, 0)
+submitBtn.Text = "UNLOCK"
 submitBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 submitBtn.BorderSizePixel = 0
 submitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -152,17 +185,17 @@ submitGlow.Parent = submitBtn
 
 -- Key Status
 local keyStatus = Instance.new("TextLabel")
-keyStatus.Size = UDim2.new(1, 0, 0, 20)
-keyStatus.Position = UDim2.new(0, 0, 0.88, 0)
+keyStatus.Size = UDim2.new(1, 0, 0, 18)
+keyStatus.Position = UDim2.new(0, 0, 0.92, 0)
 keyStatus.BackgroundTransparency = 1
 keyStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
-keyStatus.Text = "Enter key to continue..."
+keyStatus.Text = ""
 keyStatus.Font = Enum.Font.SourceSans
 keyStatus.TextSize = 11
 keyStatus.Parent = keyFrame
 
--- ===== MAIN HOPPER FRAME (Hidden until key accepted) =====
-local mainFrameSize = isMobile and UDim2.new(0, 240, 0, 160) or UDim2.new(0, 280, 0, 170)
+-- ===== MAIN HUB FRAME =====
+local mainFrameSize = isMobile and UDim2.new(0, 250, 0, 240) or UDim2.new(0, 290, 0, 260)
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = mainFrameSize
@@ -184,25 +217,25 @@ mfStroke.Transparency = 0.5
 mfStroke.Thickness = 1.5
 mfStroke.Parent = mainFrame
 
--- Main Title
-local mainTitle = Instance.new("TextLabel")
-mainTitle.Size = UDim2.new(1, 0, 0, 38)
-mainTitle.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-mainTitle.TextColor3 = Color3.fromRGB(0, 255, 170)
-mainTitle.Text = "SERVER HOPPER"
-mainTitle.Font = Enum.Font.GothamBold
-mainTitle.TextSize = isMobile and 13 or 16
-mainTitle.BorderSizePixel = 0
-mainTitle.Parent = mainFrame
+-- Hub Title
+local hubTitle = Instance.new("TextLabel")
+hubTitle.Size = UDim2.new(1, 0, 0, 42)
+hubTitle.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+hubTitle.TextColor3 = Color3.fromRGB(0, 255, 170)
+hubTitle.Text = "D4VE HUB"
+hubTitle.Font = Enum.Font.GothamBlack
+hubTitle.TextSize = isMobile and 17 or 21
+hubTitle.BorderSizePixel = 0
+hubTitle.Parent = mainFrame
 
-local mtCorner = Instance.new("UICorner")
-mtCorner.CornerRadius = UDim.new(0, 14)
-mtCorner.Parent = mainTitle
+local htCorner = Instance.new("UICorner")
+htCorner.CornerRadius = UDim.new(0, 14)
+htCorner.Parent = hubTitle
 
--- Close Button Main
+-- Close Button
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 28, 0, 28)
-closeBtn.Position = UDim2.new(1, -34, 0, 5)
+closeBtn.Position = UDim2.new(1, -34, 0, 7)
 closeBtn.Text = "X"
 closeBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -232,17 +265,65 @@ closeBtn.MouseLeave:Connect(function()
     }):Play()
 end)
 
+-- ===== SERVER HOP BUTTON =====
+local serverHopBtn = Instance.new("TextButton")
+serverHopBtn.Size = UDim2.new(0.85, 0, 0, 42)
+serverHopBtn.Position = UDim2.new(0.075, 0, 0.2, 0)
+serverHopBtn.Text = "SERVER HOP 🔄"
+serverHopBtn.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
+serverHopBtn.BorderSizePixel = 0
+serverHopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+serverHopBtn.Font = Enum.Font.GothamBlack
+serverHopBtn.TextSize = isMobile and 12 or 14
+serverHopBtn.AutoButtonColor = false
+serverHopBtn.Parent = mainFrame
+
+local shbCorner = Instance.new("UICorner")
+shbCorner.CornerRadius = UDim.new(0, 10)
+shbCorner.Parent = serverHopBtn
+
+local shbGlow = Instance.new("Frame")
+shbGlow.Size = UDim2.new(1, 0, 0, 3)
+shbGlow.Position = UDim2.new(0, 0, 1, -3)
+shbGlow.BorderSizePixel = 0
+shbGlow.BackgroundColor3 = Color3.fromRGB(255, 180, 50)
+shbGlow.Parent = serverHopBtn
+
+-- ===== REJOIN BUTTON =====
+local rejoinBtn = Instance.new("TextButton")
+rejoinBtn.Size = UDim2.new(0.85, 0, 0, 42)
+rejoinBtn.Position = UDim2.new(0.075, 0, 0.4, 0)
+rejoinBtn.Text = "REJOIN 🔁"
+rejoinBtn.BackgroundColor3 = Color3.fromRGB(100, 60, 255)
+rejoinBtn.BorderSizePixel = 0
+rejoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+rejoinBtn.Font = Enum.Font.GothamBlack
+rejoinBtn.TextSize = isMobile and 12 or 14
+rejoinBtn.AutoButtonColor = false
+rejoinBtn.Parent = mainFrame
+
+local rjbCorner = Instance.new("UICorner")
+rjbCorner.CornerRadius = UDim.new(0, 10)
+rjbCorner.Parent = rejoinBtn
+
+local rjbGlow = Instance.new("Frame")
+rjbGlow.Size = UDim2.new(1, 0, 0, 3)
+rjbGlow.Position = UDim2.new(0, 0, 1, -3)
+rjbGlow.BorderSizePixel = 0
+rjbGlow.BackgroundColor3 = Color3.fromRGB(140, 110, 255)
+rjbGlow.Parent = rejoinBtn
+
 -- Place ID Input
 local placeInput = Instance.new("TextBox")
-placeInput.Size = UDim2.new(0.8, 0, 0, 38)
-placeInput.Position = UDim2.new(0.1, 0, 0.3, 0)
+placeInput.Size = UDim2.new(0.85, 0, 0, 36)
+placeInput.Position = UDim2.new(0.075, 0, 0.62, 0)
 placeInput.PlaceholderText = "Enter Place ID..."
 placeInput.Text = ""
 placeInput.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
 placeInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 placeInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
 placeInput.Font = Enum.Font.SourceSans
-placeInput.TextSize = 14
+placeInput.TextSize = 13
 placeInput.BorderSizePixel = 0
 placeInput.Parent = mainFrame
 
@@ -250,16 +331,16 @@ local piCorner = Instance.new("UICorner")
 piCorner.CornerRadius = UDim.new(0, 8)
 piCorner.Parent = placeInput
 
--- Hop Button
+-- Custom Hop Button
 local hopBtn = Instance.new("TextButton")
-hopBtn.Size = UDim2.new(0.8, 0, 0, 42)
-hopBtn.Position = UDim2.new(0.1, 0, 0.58, 0)
-hopBtn.Text = "HOP SERVER"
+hopBtn.Size = UDim2.new(0.85, 0, 0, 42)
+hopBtn.Position = UDim2.new(0.075, 0, 0.8, 0)
+hopBtn.Text = "CUSTOM HOP 🎯"
 hopBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 130)
 hopBtn.BorderSizePixel = 0
 hopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 hopBtn.Font = Enum.Font.GothamBlack
-hopBtn.TextSize = 15
+hopBtn.TextSize = isMobile and 12 or 14
 hopBtn.AutoButtonColor = false
 hopBtn.Parent = mainFrame
 
@@ -267,7 +348,6 @@ local hbCorner = Instance.new("UICorner")
 hbCorner.CornerRadius = UDim.new(0, 10)
 hbCorner.Parent = hopBtn
 
--- Hop Glow
 local hopGlow = Instance.new("Frame")
 hopGlow.Size = UDim2.new(1, 0, 0, 3)
 hopGlow.Position = UDim2.new(0, 0, 1, -3)
@@ -277,11 +357,11 @@ hopGlow.Parent = hopBtn
 
 -- Status Label
 local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, 0, 0, 20)
-statusLabel.Position = UDim2.new(0, 0, 0.88, 0)
+statusLabel.Size = UDim2.new(1, 0, 0, 18)
+statusLabel.Position = UDim2.new(0, 0, 0.94, 0)
 statusLabel.BackgroundTransparency = 1
 statusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-statusLabel.Text = "Ready to hop"
+statusLabel.Text = "Ready"
 statusLabel.Font = Enum.Font.SourceSans
 statusLabel.TextSize = 11
 statusLabel.Parent = mainFrame
@@ -291,28 +371,23 @@ submitBtn.MouseButton1Click:Connect(function()
     if keyInput.Text == correctKey then
         keyAccepted = true
         
-        -- Save key to file
         if writefile then
             pcall(function()
-                writefile("ServerHopper_Key.txt", correctKey)
+                writefile("D4veHub_Key.txt", correctKey)
             end)
         end
         
-        -- Switch frames
         keyFrame.Visible = false
         mainFrame.Visible = true
-        keyStatus.Text = "Key accepted! Saved."
-        keyStatus.TextColor3 = Color3.fromRGB(0, 255, 100)
     else
-        keyStatus.Text = "Wrong key! Try again."
+        keyStatus.Text = "Wrong key!"
         keyStatus.TextColor3 = Color3.fromRGB(255, 60, 60)
         wait(2)
-        keyStatus.Text = "Enter key to continue..."
+        keyStatus.Text = ""
         keyStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
     end
 end)
 
--- Submit Hover Effects
 submitBtn.MouseEnter:Connect(function()
     TweenService:Create(submitBtn, TweenInfo.new(0.2), {
         BackgroundColor3 = Color3.fromRGB(0, 190, 255)
@@ -325,7 +400,48 @@ submitBtn.MouseLeave:Connect(function()
     }):Play()
 end)
 
--- ===== HOP FUNCTION =====
+-- ===== SERVER HOP (New Server) =====
+serverHopBtn.MouseButton1Click:Connect(function()
+    local currentPlaceId = game.PlaceId
+    statusLabel.Text = "Finding new server..."
+    statusLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
+    hopEvent:FireServer(currentPlaceId, nil)
+end)
+
+serverHopBtn.MouseEnter:Connect(function()
+    TweenService:Create(serverHopBtn, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(255, 160, 20)
+    }):Play()
+end)
+
+serverHopBtn.MouseLeave:Connect(function()
+    TweenService:Create(serverHopBtn, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(255, 140, 0)
+    }):Play()
+end)
+
+-- ===== REJOIN (Same Server) =====
+rejoinBtn.MouseButton1Click:Connect(function()
+    local currentPlaceId = game.PlaceId
+    local currentJobId = game.JobId
+    statusLabel.Text = "Rejoining same server..."
+    statusLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
+    hopEvent:FireServer(currentPlaceId, currentJobId)
+end)
+
+rejoinBtn.MouseEnter:Connect(function()
+    TweenService:Create(rejoinBtn, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(120, 80, 255)
+    }):Play()
+end)
+
+rejoinBtn.MouseLeave:Connect(function()
+    TweenService:Create(rejoinBtn, TweenInfo.new(0.2), {
+        BackgroundColor3 = Color3.fromRGB(100, 60, 255)
+    }):Play()
+end)
+
+-- ===== CUSTOM HOP =====
 hopBtn.MouseButton1Click:Connect(function()
     local placeId = tonumber(placeInput.Text)
     
@@ -333,17 +449,16 @@ hopBtn.MouseButton1Click:Connect(function()
         statusLabel.Text = "Invalid Place ID!"
         statusLabel.TextColor3 = Color3.fromRGB(255, 60, 60)
         wait(2)
-        statusLabel.Text = "Ready to hop"
+        statusLabel.Text = "Ready"
         statusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
         return
     end
     
     statusLabel.Text = "Hopping..."
     statusLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
-    hopEvent:FireServer(placeId)
+    hopEvent:FireServer(placeId, nil)
 end)
 
--- Hop Button Hover
 hopBtn.MouseEnter:Connect(function()
     TweenService:Create(hopBtn, TweenInfo.new(0.2), {
         BackgroundColor3 = Color3.fromRGB(0, 220, 150)
@@ -356,7 +471,7 @@ hopBtn.MouseLeave:Connect(function()
     }):Play()
 end)
 
-print("Server Hopper loaded!")
+print("D4ve Hub loaded!")
 ]]
 
 loadstring(guiCode)()
